@@ -1,5 +1,6 @@
 import { toast } from 'react-hot-toast';
 import { apiConnector } from '../apiconnector';
+import { interviewEndpoints } from '../apis';
 
 const INTERVIEW_ENDPOINTS = {
   CREATE_INTERVIEW: 'http://localhost:5000/api/interviews/create',
@@ -9,7 +10,9 @@ const INTERVIEW_ENDPOINTS = {
   END_INTERVIEW: 'http://localhost:5000/api/interviews',
   GET_SESSION: 'http://localhost:5000/api/interviews',
   DELETE_INTERVIEW: 'http://localhost:5000/api/interviews',
+  
 };
+const {GET_RESULTS_API} = interviewEndpoints
 
 const AI_ENDPOINTS = {
   GENERATE_QUESTIONS: 'http://localhost:5000/api/ai/generate-questions',
@@ -17,6 +20,7 @@ const AI_ENDPOINTS = {
   NEXT_QUESTION: 'http://localhost:5000/api/ai/next-question',
   COMPLETE_INTERVIEW: 'http://localhost:5000/api/ai/complete-interview',
 };
+
 
 // Create new interview
 export const createInterview = async (formData, setLoading,token) => {
@@ -237,22 +241,57 @@ export const getNextQuestion = async (sessionId) => {
 };
 
 // Complete interview
-export const completeInterview = async ( interviewId,token) => {
-  const toastId = toast.loading('Generating feedback...');
-
+export const completeInterview = async (interviewId, token) => {
+  const toastId = toast.loading("Generating results...");
+  
   try {
-    const response = await apiConnector('POST', AI_ENDPOINTS.COMPLETE_INTERVIEW, {
-      interviewId,
-    } ,{Authorization: `Bearer ${token}`} );
+    const response = await apiConnector(
+      "POST",
+      AI_ENDPOINTS.COMPLETE_INTERVIEW,
+      { interviewId },
+      {
+        Authorization: `Bearer ${token}`
+      }
+    );
 
-    if (response.data.success) {
-      toast.success('Feedback generated!', { id: toastId });
-      console.log("response  : ",response)
-      return response.data.data;
+    console.log("Complete Interview API Response:", response);
+
+    if (!response.data.success) {
+      throw new Error(response.data.message || "Failed to complete interview");
     }
+
+    toast.success("Results generated successfully!", { id: toastId });
+    
+    // Return the data object which contains session and feedback
+    return response.data.data;
+    
   } catch (error) {
-    console.error('Complete interview error:', error);
-    toast.error('Failed to generate feedback', { id: toastId });
+    console.error("Complete Interview API Error:", error);
+    toast.error(error.response?.data?.message || "Failed to generate results", { id: toastId });
+    throw error;
+  }
+};
+
+// Get interview results (if needed separately)
+export const getInterviewResults = async (interviewId, token) => {
+  try {
+    const response = await apiConnector(
+      "GET",
+      GET_RESULTS_API,
+      null,
+      {
+        Authorization: `Bearer ${token}`
+      }
+    );
+
+    if (!response.data.success) {
+      throw new Error(response.data.message || "Failed to fetch results");
+    }
+
+    return response.data.data;
+    
+  } catch (error) {
+    console.error("Get Results API Error:", error);
     throw error;
   }
 };

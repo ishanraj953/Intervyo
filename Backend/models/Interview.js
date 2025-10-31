@@ -1,3 +1,4 @@
+// models/Interview.js
 import mongoose from 'mongoose';
 
 const interviewSchema = new mongoose.Schema({
@@ -17,38 +18,69 @@ const interviewSchema = new mongoose.Schema({
     required: true
   },
   duration: {
-    type: Number, // in minutes
+    type: Number,
     required: true
   },
   resumeUrl: {
     type: String,
     required: true
   },
+  resumeText: String, // Extracted text from resume
+  
   status: {
     type: String,
     enum: ['scheduled', 'in-progress', 'completed', 'cancelled'],
     default: 'scheduled'
   },
+  
   scheduledAt: {
     type: Date,
     required: true
   },
-  startedAt: {
-    type: Date
-  },
-  completedAt: {
-    type: Date
-  },
+  startedAt: Date,
+  completedAt: Date,
+  
+  // Scores (stored after completion)
   overallScore: {
     type: Number,
     min: 0,
     max: 100
   },
-  feedback: {
-    type: String
+  technicalScore: {
+    type: Number,
+    min: 0,
+    max: 10
   },
+  communicationScore: {
+    type: Number,
+    min: 0,
+    max: 10
+  },
+  problemSolvingScore: {
+    type: Number,
+    min: 0,
+    max: 10
+  },
+  
+  // Summary feedback
+  feedback: String,
   strengths: [String],
-  improvements: [String]
+  improvements: [String],
+  
+  // Reference to session for detailed data
+  sessionId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'InterviewSession'
+  },
+  
+  // Certificate information (generated after completion)
+  certificate: {
+    certificateId: String,
+    issuedAt: Date,
+    validUntil: Date,
+    verificationCode: String,
+    shareableLink: String
+  }
 }, {
   timestamps: true
 });

@@ -6,7 +6,7 @@ import { deleteFromCloudinary } from '../config/cloudinary.js';
 export const getProfile = async (req, res) => {
   try {
     const user = await User.findById(req.user.id).populate('profile').exec();
-    console.log("User details : ",user)
+    // console.log("User details : ",user)
     
     if (!user) {
       return res.status(404).json({ 
@@ -14,7 +14,7 @@ export const getProfile = async (req, res) => {
         message: 'User not found' 
       });
     }
-    console.log("user : ",user)
+    // console.log("user : ",user)
     res.status(200).json({
       success: true,
       user,

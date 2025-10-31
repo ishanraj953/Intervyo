@@ -5,12 +5,206 @@
 
 import { Module, AIContentCache } from '../models/LearningHub.model.js';
 import OpenAI from "openai";
+import {  Topic } from '../models/LearningHub.model.js';
 
 export const openai = new OpenAI({
   apiKey: process.env.GROQ_API_KEY,
   baseURL: "https://api.groq.com/openai/v1",
 });
 
+
+
+// ============================================
+// GENERATE TEXT CONTENT
+// ============================================
+async function generateTextContent(module) {
+  const topic = await Topic.findById(module.topicId);
+  
+  const prompt = `You are an expert technical educator. Create comprehensive learning content for this module:
+
+Topic: ${topic.title}
+Module: ${module.title}
+Description: ${module.description}
+
+Create detailed, well-structured content that includes:
+1. Introduction (Why this matters)
+2. Core Concepts (Explain thoroughly with examples)
+3. Practical Applications
+4. Best Practices
+5. Common Pitfalls
+6. Summary & Key Takeaways
+
+Use markdown formatting with:
+- Clear headings (##, ###)
+- Code blocks when relevant
+- Bullet points for lists
+- **Bold** for important terms
+- Real-world examples
+
+Make it engaging, practical, and suitable for someone learning this topic.`;
+
+  const message = await openai.chat.completions.create({
+    model: "llama-3.3-70b-versatile",
+    messages: [{
+      role: 'user',
+      content: prompt
+    }],
+    temperature: 0.8,
+    max_tokens: 2000,
+  });
+
+  return {
+    type: 'markdown',
+    content: message.choices[0].message.content,
+    resources: []
+  };
+}
+
+// ============================================
+// GENERATE CODE CONTENT
+// ============================================
+async function generateCodeContent(module) {
+  const topic = await Topic.findById(module.topicId);
+  
+  const prompt = `Create a hands-on coding lesson for:
+
+Module: ${module.title}
+Topic: ${topic.title}
+Description: ${module.description}
+
+Include:
+1. **Concept Explanation** (brief)
+2. **Code Example** (well-commented, production-quality)
+3. **Step-by-Step Breakdown**
+4. **Practice Exercise** (with hints)
+5. **Solution** (with explanation)
+6. **Common Mistakes** to avoid
+
+Format as markdown with code blocks. Make it practical and hands-on.`;
+
+  const message = await openai.chat.completions.create({
+    model: "llama-3.3-70b-versatile",
+    messages: [{
+      role: 'user',
+      content: prompt
+    }],
+    temperature: 0.8,
+    max_tokens: 2000,
+  });
+
+  return {
+    type: 'code',
+    content: message.choices[0].message.content,
+    language: determineLanguage(topic.domain)
+  };
+}
+
+// ============================================
+// GENERATE QUIZ CONTENT
+// ============================================
+async function generateQuizContent(module) {
+  const topic = await Topic.findById(module.topicId);
+  
+  const prompt = `Create a quiz to test understanding of:
+
+Module: ${module.title}
+Topic: ${topic.title}
+
+Generate 8-10 questions with:
+- Mix of multiple choice, true/false, and short answer
+- Varying difficulty levels
+- Practical, scenario-based questions
+- Detailed explanations for each answer
+
+Return as JSON array:
+[
+  {
+    "question": "Question text",
+    "type": "multiple_choice",
+    "options": ["A", "B", "C", "D"],
+    "correctAnswer": "B",
+    "explanation": "Why this is correct",
+    "difficulty": "medium"
+  }
+]`;
+
+  const message = await openai.chat.completions.create({
+    model: "llama-3.3-70b-versatile",
+    messages: [{
+      role: 'user',
+      content: prompt
+    }],
+    temperature: 0.8,
+    max_tokens: 2000,
+  });
+
+  const responseText = message.choices[0].message.content;
+  const jsonMatch = responseText.match(/\[[\s\S]*\]/);
+  const questions = jsonMatch ? JSON.parse(jsonMatch[0]) : [];
+
+  return {
+    type: 'quiz',
+    questions: questions,
+    passingScore: 70
+  };
+}
+
+// ============================================
+// GENERATE PROJECT CONTENT
+// ============================================
+async function generateProjectContent(module) {
+  const topic = await Topic.findById(module.topicId);
+  
+  const prompt = `Create a hands-on project for:
+
+Module: ${module.title}
+Topic: ${topic.title}
+
+Include:
+1. **Project Overview** (What we'll build)
+2. **Learning Objectives**
+3. **Requirements & Setup**
+4. **Step-by-Step Instructions** (detailed)
+5. **Code Snippets** (for each step)
+6. **Testing & Verification**
+7. **Bonus Challenges**
+8. **Solution Repository** (structure)
+
+Make it practical, industry-relevant, and portfolio-worthy.`;
+
+  const message = await openai.chat.completions.create({
+    model: "llama-3.3-70b-versatile",
+    messages: [{
+      role: 'user',
+      content: prompt
+    }],
+    temperature: 0.8,
+    max_tokens: 2000,
+  });
+
+  return {
+    type: 'project',
+    content: message.choices[0].message.content,
+    estimatedHours: Math.ceil(module.estimatedMinutes / 60)
+  };
+}
+
+// ============================================
+// HELPER: DETERMINE LANGUAGE
+// ============================================
+function determineLanguage(domain) {
+  const languageMap = {
+    'Frontend': 'javascript',
+    'Backend': 'javascript',
+    'Fullstack': 'javascript',
+    'Data Science': 'python',
+    'ML': 'python',
+    'DevOps': 'bash',
+    'Mobile': 'javascript',
+    'Blockchain': 'solidity'
+  };
+  return languageMap[domain] || 'javascript';
+}
 // ============================================
 // GENERATE TOPIC CONTENT (Modules Structure)
 // ============================================
@@ -40,7 +234,7 @@ Difficulty: ${topic.difficulty}
 Description: ${topic.description}
 Estimated Hours: ${topic.estimatedHours}
 
-Generate a well-structured course outline with 8-12 modules. Each module should include:
+Generate a well-structured course outline with 2-3 modules. Each module should include:
 1. Module title (clear and descriptive)
 2. Brief description (2-3 sentences)
 3. Estimated time in minutes
@@ -71,7 +265,8 @@ Make it practical, industry-relevant, and suitable for ${topic.difficulty.toLowe
         max_tokens: 1000,
       });
 
-      const responseText = message.content[0].text;
+      console.log("Message : ",message)
+      const responseText = message.choices[0].message.content;
       
       // Extract JSON from response
       const jsonMatch = responseText.match(/\[[\s\S]*\]/);
@@ -169,202 +364,202 @@ export async function generateModuleContent(module) {
 // ============================================
 // GENERATE TEXT CONTENT
 // ============================================
-async function generateTextContent(module) {
-  const topic = await module.populate('topicId');
+// async function generateTextContent(module) {
+//   const topic = await module.populate('topicId');
   
-  const prompt = `You are an expert technical educator. Create comprehensive learning content for this module:
+//   const prompt = `You are an expert technical educator. Create comprehensive learning content for this module:
 
-Topic: ${topic.topicId.title}
-Module: ${module.title}
-Description: ${module.description}
+// Topic: ${topic.topicId.title}
+// Module: ${module.title}
+// Description: ${module.description}
 
-Create detailed, well-structured content that includes:
-1. Introduction (Why this matters)
-2. Core Concepts (Explain thoroughly with examples)
-3. Practical Applications
-4. Best Practices
-5. Common Pitfalls
-6. Summary & Key Takeaways
+// Create detailed, well-structured content that includes:
+// 1. Introduction (Why this matters)
+// 2. Core Concepts (Explain thoroughly with examples)
+// 3. Practical Applications
+// 4. Best Practices
+// 5. Common Pitfalls
+// 6. Summary & Key Takeaways
 
-Use markdown formatting with:
-- Clear headings (##, ###)
-- Code blocks when relevant
-- Bullet points for lists
-- **Bold** for important terms
-- Real-world examples
+// Use markdown formatting with:
+// - Clear headings (##, ###)
+// - Code blocks when relevant
+// - Bullet points for lists
+// - **Bold** for important terms
+// - Real-world examples
 
-Make it engaging, practical, and suitable for someone learning this topic.`;
+// Make it engaging, practical, and suitable for someone learning this topic.`;
 
-  const message = await openai.chat.completions.create({
-    model: "llama-3.3-70b-versatile",
-    messages: [{
-      role: 'user',
-      content: prompt
-    }],
-    temperature: 0.8,
-    max_tokens: 1000,
-  });
+//   const message = await openai.chat.completions.create({
+//     model: "llama-3.3-70b-versatile",
+//     messages: [{
+//       role: 'user',
+//       content: prompt
+//     }],
+//     temperature: 0.8,
+//     max_tokens: 1000,
+//   });
 
-  return {
-    type: 'markdown',
-    content: message.content[0].text,
-    resources: []
-  };
-}
+//   return {
+//     type: 'markdown',
+//     content: message.content[0].text,
+//     resources: []
+//   };
+// }
 
 // ============================================
 // GENERATE CODE CONTENT
 // ============================================
-async function generateCodeContent(module) {
-  const topic = await module.populate('topicId');
+// async function generateCodeContent(module) {
+//   const topic = await module.populate('topicId');
   
-  const prompt = `Create a hands-on coding lesson for:
+//   const prompt = `Create a hands-on coding lesson for:
 
-Module: ${module.title}
-Topic: ${topic.topicId.title}
-Description: ${module.description}
+// Module: ${module.title}
+// Topic: ${topic.topicId.title}
+// Description: ${module.description}
 
-Include:
-1. **Concept Explanation** (brief)
-2. **Code Example** (well-commented, production-quality)
-3. **Step-by-Step Breakdown**
-4. **Practice Exercise** (with hints)
-5. **Solution** (with explanation)
-6. **Common Mistakes** to avoid
+// Include:
+// 1. **Concept Explanation** (brief)
+// 2. **Code Example** (well-commented, production-quality)
+// 3. **Step-by-Step Breakdown**
+// 4. **Practice Exercise** (with hints)
+// 5. **Solution** (with explanation)
+// 6. **Common Mistakes** to avoid
 
-Format as markdown with code blocks. Make it practical and hands-on.`;
+// Format as markdown with code blocks. Make it practical and hands-on.`;
 
-  const message = await openai.chat.completions.create({
-    model: "llama-3.3-70b-versatile",
-    messages: [{
-      role: 'user',
-      content: prompt
-    }],
-    temperature: 0.8,
-    max_tokens: 1000,
-  });
+//   const message = await openai.chat.completions.create({
+//     model: "llama-3.3-70b-versatile",
+//     messages: [{
+//       role: 'user',
+//       content: prompt
+//     }],
+//     temperature: 0.8,
+//     max_tokens: 1000,
+//   });
 
-  return {
-    type: 'code',
-    content: message.content[0].text,
-    language: determineLanguage(topic.topicId.domain)
-  };
-}
+//   return {
+//     type: 'code',
+//     content: message.content[0].text,
+//     language: determineLanguage(topic.topicId.domain)
+//   };
+// }
 
 // ============================================
 // GENERATE QUIZ CONTENT
 // ============================================
-async function generateQuizContent(module) {
-  const topic = await module.populate('topicId');
+// async function generateQuizContent(module) {
+//   const topic = await module.populate('topicId');
   
-  const prompt = `Create a quiz to test understanding of:
+//   const prompt = `Create a quiz to test understanding of:
 
-Module: ${module.title}
-Topic: ${topic.topicId.title}
+// Module: ${module.title}
+// Topic: ${topic.topicId.title}
 
-Generate 8-10 questions with:
-- Mix of multiple choice, true/false, and short answer
-- Varying difficulty levels
-- Practical, scenario-based questions
-- Detailed explanations for each answer
+// Generate 8-10 questions with:
+// - Mix of multiple choice, true/false, and short answer
+// - Varying difficulty levels
+// - Practical, scenario-based questions
+// - Detailed explanations for each answer
 
-Return as JSON array:
-[
-  {
-    "question": "Question text",
-    "type": "multiple_choice",
-    "options": ["A", "B", "C", "D"],
-    "correctAnswer": "B",
-    "explanation": "Why this is correct",
-    "difficulty": "medium"
-  }
-]`;
+// Return as JSON array:
+// [
+//   {
+//     "question": "Question text",
+//     "type": "multiple_choice",
+//     "options": ["A", "B", "C", "D"],
+//     "correctAnswer": "B",
+//     "explanation": "Why this is correct",
+//     "difficulty": "medium"
+//   }
+// ]`;
 
-//   const message = await anthropic.messages.create({
-//     model: 'claude-sonnet-4-20250514',
-//     max_tokens: 6000,
+// //   const message = await anthropic.messages.create({
+// //     model: 'claude-sonnet-4-20250514',
+// //     max_tokens: 6000,
+// //     messages: [{
+// //       role: 'user',
+// //       content: prompt
+// //     }]
+// //   });
+// const message = await openai.chat.completions.create({
+//     model: "llama-3.3-70b-versatile",
 //     messages: [{
 //       role: 'user',
 //       content: prompt
-//     }]
+//     }],
+//     temperature: 0.8,
+//     max_tokens: 1000,
 //   });
-const message = await openai.chat.completions.create({
-    model: "llama-3.3-70b-versatile",
-    messages: [{
-      role: 'user',
-      content: prompt
-    }],
-    temperature: 0.8,
-    max_tokens: 1000,
-  });
 
-  const responseText = message.content[0].text;
-  const jsonMatch = responseText.match(/\[[\s\S]*\]/);
-  const questions = jsonMatch ? JSON.parse(jsonMatch[0]) : [];
+//   const responseText = message.content[0].text;
+//   const jsonMatch = responseText.match(/\[[\s\S]*\]/);
+//   const questions = jsonMatch ? JSON.parse(jsonMatch[0]) : [];
 
-  return {
-    type: 'quiz',
-    questions: questions,
-    passingScore: 70
-  };
-}
+//   return {
+//     type: 'quiz',
+//     questions: questions,
+//     passingScore: 70
+//   };
+// }
 
 // ============================================
 // GENERATE PROJECT CONTENT
 // ============================================
-async function generateProjectContent(module) {
-  const topic = await module.populate('topicId');
+// async function generateProjectContent(module) {
+//   const topic = await module.populate('topicId');
   
-  const prompt = `Create a hands-on project for:
+//   const prompt = `Create a hands-on project for:
 
-Module: ${module.title}
-Topic: ${topic.topicId.title}
+// Module: ${module.title}
+// Topic: ${topic.topicId.title}
 
-Include:
-1. **Project Overview** (What we'll build)
-2. **Learning Objectives**
-3. **Requirements & Setup**
-4. **Step-by-Step Instructions** (detailed)
-5. **Code Snippets** (for each step)
-6. **Testing & Verification**
-7. **Bonus Challenges**
-8. **Solution Repository** (structure)
+// Include:
+// 1. **Project Overview** (What we'll build)
+// 2. **Learning Objectives**
+// 3. **Requirements & Setup**
+// 4. **Step-by-Step Instructions** (detailed)
+// 5. **Code Snippets** (for each step)
+// 6. **Testing & Verification**
+// 7. **Bonus Challenges**
+// 8. **Solution Repository** (structure)
 
-Make it practical, industry-relevant, and portfolio-worthy.`;
+// Make it practical, industry-relevant, and portfolio-worthy.`;
 
-  const message = await openai.chat.completions.create({
-    model: "llama-3.3-70b-versatile",
-    messages: [{
-      role: 'user',
-      content: prompt
-    }],
-    temperature: 0.8,
-    max_tokens: 1000,
-  });
+//   const message = await openai.chat.completions.create({
+//     model: "llama-3.3-70b-versatile",
+//     messages: [{
+//       role: 'user',
+//       content: prompt
+//     }],
+//     temperature: 0.8,
+//     max_tokens: 1000,
+//   });
 
-  return {
-    type: 'project',
-    content: message.content[0].text,
-    estimatedHours: Math.ceil(module.estimatedMinutes / 60)
-  };
-}
+//   return {
+//     type: 'project',
+//     content: message.content[0].text,
+//     estimatedHours: Math.ceil(module.estimatedMinutes / 60)
+//   };
+// }
 
 // ============================================
 // HELPER: DETERMINE LANGUAGE
 // ============================================
-function determineLanguage(domain) {
-  const languageMap = {
-    'Frontend': 'javascript',
-    'Backend': 'javascript',
-    'Fullstack': 'javascript',
-    'Data Science': 'python',
-    'ML': 'python',
-    'DevOps': 'bash',
-    'Mobile': 'javascript',
-    'Blockchain': 'solidity'
-  };
-  return languageMap[domain] || 'javascript';
-}
+// function determineLanguage(domain) {
+//   const languageMap = {
+//     'Frontend': 'javascript',
+//     'Backend': 'javascript',
+//     'Fullstack': 'javascript',
+//     'Data Science': 'python',
+//     'ML': 'python',
+//     'DevOps': 'bash',
+//     'Mobile': 'javascript',
+//     'Blockchain': 'solidity'
+//   };
+//   return languageMap[domain] || 'javascript';
+// }
 
 // ============================================
 // GENERATE LEARNING PATH RECOMMENDATIONS
@@ -409,3 +604,56 @@ Return as JSON:
     throw error;
   }
 }
+
+
+// ============================================
+// GENERATE MODULE CONTENT (Missing function)
+// ============================================
+// export async function generateModuleContent(module) {
+//   try {
+//     console.log(`🤖 Generating content for module: ${module.title}`);
+
+//     // Check cache first
+//     const cached = await AIContentCache.findOne({
+//       topicId: module.topicId,
+//       moduleTitle: module.title
+//     });
+
+//     if (cached && cached.expiresAt > new Date()) {
+//       console.log('✅ Using cached module content');
+//       cached.usageCount += 1;
+//       await cached.save();
+//       return cached.content;
+//     }
+
+//     // Generate new content based on type
+//     let content;
+
+//     if (module.contentType === 'text') {
+//       content = await generateTextContent(module);
+//     } else if (module.contentType === 'code') {
+//       content = await generateCodeContent(module);
+//     } else if (module.contentType === 'quiz') {
+//       content = await generateQuizContent(module);
+//     } else if (module.contentType === 'project') {
+//       content = await generateProjectContent(module);
+//     } else {
+//       content = await generateTextContent(module);
+//     }
+
+//     // Cache the content
+//     await AIContentCache.create({
+//       topicId: module.topicId,
+//       moduleTitle: module.title,
+//       content: content,
+//       usageCount: 1
+//     });
+
+//     console.log('✅ Module content generated and cached');
+//     return content;
+
+//   } catch (error) {
+//     console.error('Error generating module content:', error);
+//     throw error;
+//   }
+// }

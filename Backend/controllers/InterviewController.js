@@ -265,3 +265,85 @@ export const deleteInterview = async (req, res) => {
     });
   }
 };
+
+export const getInterviewResults = async (req, res) => {
+  try {
+    const { interviewId } = req.params;
+    const userId = req.user.id;
+
+    // Find interview
+    const interview = await Interview.findOne({ 
+      _id: interviewId, 
+      userId: userId 
+    });
+
+    if (!interview) {
+      return res.status(404).json({
+        success: false,
+        message: 'Interview not found'
+      });
+    }
+
+    // Check if completed
+    if (interview.status !== 'completed') {
+      return res.status(400).json({
+        success: false,
+        message: 'Interview not yet completed'
+      });
+    }
+
+    // Find session
+    const session = await InterviewSession.findOne({
+      interviewId: interviewId,
+      userId: userId
+    });
+
+    if (!session) {
+      return res.status(404).json({
+        success: false,
+        message: 'Session not found'
+      });
+    }
+
+    // Return data in the same format as completeInterview
+    const responseData = {
+      session: {
+        _id: session._id,
+        interviewId: session.interviewId,
+        userId: session.userId,
+        conversation: session.conversation,
+        questionEvaluations: session.questionEvaluations || [],
+        sessionStatus: session.sessionStatus,
+        overallScore: session.overallScore,
+        technicalScore: session.technicalScore,
+        communicationScore: session.communicationScore,
+        problemSolvingScore: session.problemSolvingScore,
+        feedback: session.feedback,
+        createdAt: session.createdAt,
+        updatedAt: session.updatedAt
+      },
+      feedback: {
+        summary: interview.feedback || session.feedback?.summary,
+        strengths: interview.strengths || session.feedback?.strengths || [],
+        improvements: interview.improvements || session.feedback?.improvements || [],
+        overallScore: interview.overallScore,
+        technicalScore: interview.technicalScore,
+        communicationScore: interview.communicationScore,
+        problemSolvingScore: interview.problemSolvingScore
+      }
+    };
+
+    res.json({
+      success: true,
+      data: responseData
+    });
+
+  } catch (error) {
+    console.error('Get results error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to get results',
+      error: error.message
+    });
+  }
+};

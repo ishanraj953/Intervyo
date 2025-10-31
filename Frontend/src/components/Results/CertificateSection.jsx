@@ -5,10 +5,18 @@ import {
   Award, Download, Share2, Check, Copy, ExternalLink,
   Calendar, Shield, QrCode, Facebook, Twitter, Linkedin
 } from 'lucide-react';
+import { useSelector } from 'react-redux';
 
 
 const CertificateSection = ({ certificate, summary, config, completedAt }) => {
   const [copied, setCopied] = useState(false);
+
+  console.log("Certificate : ",certificate);
+  console.log("summary : ",summary);
+  console.log("config : ",config);
+
+  const {user} = useSelector((state) => state.profile)
+  console.log("user : ",user)
 
   const handleCopyLink = () => {
     navigator.clipboard.writeText(certificate.shareableLink);
@@ -69,7 +77,7 @@ const CertificateSection = ({ certificate, summary, config, completedAt }) => {
             <p className="cert-subtitle">This is to certify that</p>
             
             <div className="cert-recipient">
-              <span className="recipient-name">{certificate.userName}</span>
+              <span className="recipient-name">{user.name}</span>
             </div>
             
             <p className="cert-description">
@@ -84,16 +92,16 @@ const CertificateSection = ({ certificate, summary, config, completedAt }) => {
               </div>
               <div className="score-details">
                 <div className="score-item">
-                  <span className="label">Grade:</span>
-                  <span className="value">{summary.grade}</span>
+                  <span className="score-label">Grade:</span>
+                  <span className="score-value">{summary.grade}</span>
                 </div>
                 <div className="score-item">
-                  <span className="label">Percentile:</span>
-                  <span className="value">{summary.percentile}th</span>
+                  <span className="score-label">Percentile:</span>
+                  <span className="score-value">{summary.percentile}th</span>
                 </div>
                 <div className="score-item">
-                  <span className="label">Difficulty:</span>
-                  <span className="value">{config.difficulty}</span>
+                  <span className="score-label">Difficulty:</span>
+                  <span className="score-value">{config.difficulty}</span>
                 </div>
               </div>
             </div>

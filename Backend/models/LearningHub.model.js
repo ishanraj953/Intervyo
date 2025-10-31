@@ -5,9 +5,6 @@
 
 import mongoose from 'mongoose';
 
-// ============================================
-// TOPIC SCHEMA
-// ============================================
 const topicSchema = new mongoose.Schema({
   title: {
     type: String,

@@ -237,7 +237,7 @@ await user.save(); // ✅ Save after assigning profile
     const completeUser = await User.findById(user._id)
       .select('-password -resetPasswordToken -resetPasswordExpire')
       .populate('profile').exec();
-      console.log("Completed user : ",completeUser)
+      // console.log("Completed user : ",completeUser)
 
     res.status(201).json({
       success: true,

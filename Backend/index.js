@@ -13,6 +13,8 @@ import aiRoutes from './routes/aiRoutes.js';
 import dashboardRoutes from './routes/Dashboard.route.js';
 import leaderboardRoutes from './routes/Leaderboard.routes.js';
 import interviewSocket from './sockets/InterviewSocket.js';
+import achievementRoutes from './routes/achievement.routes.js';
+import blogRoutes from './routes/blog.routes.js';
 import profileRoutes from './routes/Profile.route.js'
 import { dbConnect } from './config/db.js';
 import { apiLimiter } from './middlewares/rateLimiter.js';
@@ -64,6 +66,9 @@ app.use('/api/profile', profileRoutes);
 app.use('/api/dashboard', dashboardRoutes);
 app.use('/api/leaderboard', leaderboardRoutes);
 app.use('/api/learning-hub', learningHubRoutes);
+app.use('/api', blogRoutes);
+
+app.use('/api/achievements', achievementRoutes);
 
 // Health check
 app.get('/api/health', (req, res) => {

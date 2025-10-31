@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { ChevronRight, Trophy, Target, Zap, TrendingUp, Award, Star, Calendar, Clock, BarChart3, BookOpen, Code, MessageSquare, Brain, Menu, X, Bell, Settings, LogOut, Sparkles, Flame, Crown } from 'lucide-react';
 import { logout } from '../services/operations/authAPI';
 import { getAllInterviews } from '../services/operations/aiInterviewApi';
@@ -8,6 +8,10 @@ import { getUserProfile } from '../services/operations/profileAPI';
 import { LightningLoader } from '../components/Loader/Loader';
 import ContributionGraph from '../components/Dashboard/ContributionGraph';
 import TextType from '../components/shared/TextType';
+import { ThemeContext } from '../components/shared/ThemeContext';
+import AchievementModal from '../components/Dashboard/AchievementModal'
+import { achievementService } from '../services/operations/achievementsAPI';
+import { getLearningProgress } from '../services/operations/learningHubAPI';
 
 export default function Dashboard() {
   const dispatch = useDispatch();
@@ -21,12 +25,68 @@ export default function Dashboard() {
   const [hoveredCard, setHoveredCard] = useState(null);
   const [loading, setLoading] = useState(true);
   const [isHovering, setIsHovering] = useState(false);
+  const { theme, toggleTheme } = useContext(ThemeContext);
+  const [learningProgress, setLearningProgress] = useState();
   const [dashboardData, setDashboardData] = useState({
     recentInterviews: [],
     stats: null,
-    learningProgress: []
   });
 
+  const [newAchievements, setNewAchievements] = useState([]);
+const [currentAchievementIndex, setCurrentAchievementIndex] = useState(0);
+const [showAchievementModal, setShowAchievementModal] = useState(false);
+
+// Add this useEffect to check for achievements when dashboard loads
+useEffect(() => {
+  const checkForNewAchievements = async () => {
+    if (!token) return;
+
+    try {
+      const result = await achievementService.checkAchievements(token);
+      
+      if (result.success && result.data.newAchievements.length > 0) {
+        setNewAchievements(result.data.newAchievements);
+        setCurrentAchievementIndex(0);
+        setShowAchievementModal(true);
+      }
+    } catch (error) {
+      console.error('Error checking achievements:', error);
+    }
+  };
+
+  // Check achievements after dashboard data is loaded
+  if (!loading && token) {
+    setTimeout(() => {
+      checkForNewAchievements();
+    }, 1000); // Small delay to let dashboard load first
+  }
+}, [loading, token]);
+
+// Handler for achievement modal close
+const handleAchievementModalClose = async () => {
+  if (newAchievements.length > 0 && currentAchievementIndex < newAchievements.length) {
+    const currentAchievement = newAchievements[currentAchievementIndex];
+    
+    // Mark as notified
+    await achievementService.markAsNotified(currentAchievement._id, token);
+    
+    // Show next achievement if available
+    if (currentAchievementIndex + 1 < newAchievements.length) {
+      setCurrentAchievementIndex(currentAchievementIndex + 1);
+      // Modal stays open for next achievement
+    } else {
+      // All achievements shown
+      setShowAchievementModal(false);
+      setNewAchievements([]);
+      setCurrentAchievementIndex(0);
+      
+      // Refresh user data to update badges
+      dispatch(getUserProfile(token));
+    }
+  } else {
+    setShowAchievementModal(false);
+  }
+};
   // FIXED: Single useEffect to fetch all data at once
   useEffect(() => {
     const fetchAllDashboardData = async () => {
@@ -49,7 +109,6 @@ export default function Dashboard() {
         setDashboardData({
           recentInterviews: interviewsArray,
           stats: user?.stats || null,
-          learningProgress: calculateLearningProgress(interviewsArray)
         });
         
       } catch (error) {
@@ -57,7 +116,6 @@ export default function Dashboard() {
         setDashboardData({
           recentInterviews: [],
           stats: user?.stats || null,
-          learningProgress: []
         });
       } finally {
         setLoading(false);
@@ -65,6 +123,31 @@ export default function Dashboard() {
     };
 
     fetchAllDashboardData();
+  }, [token]); // Only depend on token, not user
+  useEffect(() => {
+    const fetchLearningProgress = async () => {
+      if (!token) {
+        setLoading(false);
+        return;
+      }
+
+      try {
+        setLoading(true);
+        
+        const response = await getLearningProgress(token);
+        // const data = await response.json();
+        console.log("Learning data : ",response)
+        setLearningProgress(response);
+        
+      } catch (error) {
+        console.error('Error fetching learning progress data:', error);
+        setLearningProgress([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchLearningProgress();
   }, [token]); // Only depend on token, not user
 
   // Update dashboard data when user stats change
@@ -78,38 +161,38 @@ export default function Dashboard() {
   }, [user?.stats]);
 
   // Calculate learning progress based on recent interviews
-  const calculateLearningProgress = (interviews) => {
-    if (!interviews || interviews.length === 0) {
-      return [];
-    }
+  // const calculateLearningProgress = (interviews) => {
+  //   if (!interviews || interviews.length === 0) {
+  //     return [];
+  //   }
 
-    const skillMap = {};
+  //   const skillMap = {};
     
-    interviews.forEach(interview => {
-      const domain = interview.role || 'General';
-      if (!skillMap[domain]) {
-        skillMap[domain] = {
-          total: 0,
-          count: 0,
-          scores: []
-        };
-      }
-      skillMap[domain].total += interview.overallScore || 0;
-      skillMap[domain].count += 1;
-      skillMap[domain].scores.push(interview.overallScore || 0);
-    });
+  //   interviews.forEach(interview => {
+  //     const domain = interview.role || 'General';
+  //     if (!skillMap[domain]) {
+  //       skillMap[domain] = {
+  //         total: 0,
+  //         count: 0,
+  //         scores: []
+  //       };
+  //     }
+  //     skillMap[domain].total += interview.overallScore || 0;
+  //     skillMap[domain].count += 1;
+  //     skillMap[domain].scores.push(interview.overallScore || 0);
+  //   });
 
-    return Object.entries(skillMap).map(([domain, data]) => {
-      const avgScore = data.count > 0 ? Math.round(data.total / data.count) : 0;
-      return {
-        topic: domain,
-        progress: avgScore,
-        icon: getIconForDomain(domain),
-        timeSpent: `${data.count * 30}min`,
-        nextMilestone: `${(data.count + 1) * 30}min`
-      };
-    }).slice(0, 4);
-  };
+  //   return Object.entries(skillMap).map(([domain, data]) => {
+  //     const avgScore = data.count > 0 ? Math.round(data.total / data.count) : 0;
+  //     return {
+  //       topic: domain,
+  //       progress: avgScore,
+  //       icon: getIconForDomain(domain),
+  //       timeSpent: `${data.count * 30}min`,
+  //       nextMilestone: `${(data.count + 1) * 30}min`
+  //     };
+  //   }).slice(0, 4);
+  // };
 
   const getIconForDomain = (domain) => {
     const icons = {
@@ -287,6 +370,10 @@ export default function Dashboard() {
                   )}
                 </button>
 
+                <Link to={'/blog'} className='p-3 text-white hover:bg-gray-800/50 rounded-xl transition font-medium mb-5'>
+                Blog
+                </Link>
+
                 {showNotifications && (
                   <div className="absolute right-0 mt-2 w-80 bg-gray-800/95 backdrop-blur-xl rounded-xl shadow-2xl border border-gray-700/50 py-2 max-h-96 overflow-y-auto">
                     <div className="px-4 py-3 border-b border-gray-700/50">
@@ -371,7 +458,7 @@ export default function Dashboard() {
           <h1 className="text-4xl lg:text-5xl font-bold text-white mb-3 flex items-center gap-3">
             <TextType
               text={[`Welcome back, ${user?.name?.split(' ')[0] || 'User'}`, "Let's Start interview", "Good Luck!"]}
-              typingSpeed={175}
+              typingSpeed={11}
               pauseDuration={3500}
               showCursor={true}
               cursorCharacter="|"
@@ -592,13 +679,13 @@ export default function Dashboard() {
                 Learning Progress
               </h2>
               <div className="space-y-4">
-                {dashboardData.learningProgress.length > 0 ? (
-                  dashboardData.learningProgress.map((topic, index) => (
+                {learningProgress?.length > 0 ? (
+                  learningProgress.map((topic, index) => (
                     <div key={index} className="group">
                       <div className="flex items-center justify-between mb-2">
                         <div className="flex items-center gap-2">
-                          <span className="text-xl">{topic.icon}</span>
-                          <span className="text-sm font-semibold text-gray-300">{topic.topic}</span>
+                          <span className="text-xl">{topic.topic.icon}</span>
+                          <span className="text-sm font-semibold text-gray-300">{topic.topic.title}</span>
                         </div>
                         <span className="text-xs font-bold text-purple-400">{topic.progress}%</span>
                       </div>
@@ -611,8 +698,8 @@ export default function Dashboard() {
                         </div>
                       </div>
                       <div className="flex items-center justify-between mt-1 text-xs text-gray-500">
-                        <span>{topic.timeSpent} spent</span>
-                        <span>Goal: {topic.nextMilestone}</span>
+                        <span>{topic.totalTimeSpent} spent</span>
+                        {/* <span>Goal: {topic.nextMilestone}</span> */}
                       </div>
                     </div>
                   ))
@@ -763,6 +850,14 @@ export default function Dashboard() {
           animation: shimmer 2s infinite;
         }
       `}</style>
+
+      {/* Achievement Modal */}
+    {showAchievementModal && newAchievements.length > 0 && (
+      <AchievementModal
+        achievement={newAchievements[currentAchievementIndex]}
+        onClose={handleAchievementModalClose}
+      />
+    )}
     </div>
   );
 }

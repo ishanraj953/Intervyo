@@ -5,7 +5,8 @@
   "main": "index.js",
   "scripts": {
     "start": "node index.js",
-    "dev": "nodemon index.js"
+    "dev": "nodemon index.js",
+    "seed:topics": "node scripts/seedTopics.js"
   },
   "keywords": [],
   "author": "",
@@ -44,6 +45,7 @@
     "passport-google-oauth20": "^2.0.0",
     "passport-local": "^1.0.0",
     "pdf-parse": "^2.3.11",
+    "slugify": "^1.6.6",
     "socket.io": "^4.8.1",
     "uuid": "^13.0.0"
   },

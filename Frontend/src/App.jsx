@@ -17,6 +17,9 @@ import InterviewWrapper from './components/Interview/InterviewWrapper';
 import Leaderboard from './pages/Leaderboard';
 import ReviewHistory from './components/Dashboard/ReviewHistory';
 import LearningHub from './components/Dashboard/LearningHub';
+import LearningPlatform from './components/Dashboard/LearningHub';
+import BlogPlatform from './components/Blogs/BlogPlatform';
+import Achievements from './components/Dashboard/Achievements';
 
 function App() {
   return (
@@ -40,6 +43,8 @@ function App() {
         <Route path="/history" element={<ReviewHistory />} />
         <Route path="/resources" element={<LearningHub />} />
         <Route path='settings' element={<Settings />} />
+        <Route path="/blog" element={<BlogPlatform />} />
+        <Route path='/achievements' element={<Achievements />} />
         <Route 
         path="/interview-setup" 
         element={

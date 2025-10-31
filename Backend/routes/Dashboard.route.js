@@ -1,13 +1,9 @@
-// ============================================
-// DASHBOARD API ROUTES
-// File: routes/dashboard.routes.js
-// ============================================
-
 import express from 'express';
 import { authenticate } from '../middlewares/auth.js';
 import User from '../models/User.model.js';
 import Interview from '../models/Interview.js';
 import InterviewSession from '../models/InterviewSession.js';
+import { Topic, Module, UserProgress, AIContentCache } from '../models/LearningHub.model.js';
 
 const router = express.Router();
 
@@ -127,47 +123,62 @@ router.get('/learning-progress', authenticate, async (req, res) => {
     const userId = req.user.id;
 
     // Get all completed interviews grouped by role/domain
-    const interviews = await Interview.find({ 
-      userId,
-      status: 'completed'
-    }).select('role overallScore duration');
+    // const interviews = await Interview.find({ 
+    //   userId,
+    //   status: 'completed'
+    // }).select('role overallScore duration');
+
+    const enrolledCourses = await UserProgress.find({ userId })
+          .populate('topicId')
+          .sort({ lastAccessedAt: -1 });
 
     // Group by role and calculate progress
-    const progressMap = {};
+    // const progressMap = {};
     
-    interviews.forEach(interview => {
-      const domain = interview.role || 'General';
+    // interviews.forEach(interview => {
+    //   const domain = interview.role || 'General';
       
-      if (!progressMap[domain]) {
-        progressMap[domain] = {
-          topic: domain,
-          totalScore: 0,
-          count: 0,
-          totalTime: 0,
-          scores: []
-        };
-      }
+    //   if (!progressMap[domain]) {
+    //     progressMap[domain] = {
+    //       topic: domain,
+    //       totalScore: 0,
+    //       count: 0,
+    //       totalTime: 0,
+    //       scores: []
+    //     };
+    //   }
       
-      progressMap[domain].totalScore += interview.overallScore || 0;
-      progressMap[domain].count += 1;
-      progressMap[domain].totalTime += interview.duration || 0;
-      progressMap[domain].scores.push(interview.overallScore || 0);
-    });
+    //   progressMap[domain].totalScore += interview.overallScore || 0;
+    //   progressMap[domain].count += 1;
+    //   progressMap[domain].totalTime += interview.duration || 0;
+    //   progressMap[domain].scores.push(interview.overallScore || 0);
+    // });
 
     // Convert to array and calculate averages
-    const learningProgress = Object.values(progressMap).map(item => ({
-      topic: item.topic,
-      progress: Math.round(item.totalScore / item.count),
-      timeSpent: `${Math.round(item.totalTime / 60)}h ${item.totalTime % 60}min`,
-      interviews: item.count,
-      trend: item.scores.length >= 2 
-        ? item.scores[0] - item.scores[item.scores.length - 1]
-        : 0
+    // const learningProgress = Object.values(progressMap).map(item => ({
+    //   topic: item.topic,
+    //   progress: Math.round(item.totalScore / item.count),
+    //   timeSpent: `${Math.round(item.totalTime / 60)}h ${item.totalTime % 60}min`,
+    //   interviews: item.count,
+    //   trend: item.scores.length >= 2 
+    //     ? item.scores[0] - item.scores[item.scores.length - 1]
+    //     : 0
+    // }));
+
+    const formattedCourses = enrolledCourses.map(course => ({
+      topic: course.topicId,
+      progress: course.progressPercentage,
+      status: course.status,
+      enrolledAt: course.enrolledAt,
+      lastAccessedAt: course.lastAccessedAt,
+      totalTimeSpent: course.totalTimeSpent,
+      completedModules: course.completedModules.length
     }));
 
     res.json({
       success: true,
-      data: learningProgress
+      data: formattedCourses,
+      count: formattedCourses.length
     });
   } catch (error) {
     console.error('Error fetching learning progress:', error);
@@ -424,10 +435,3 @@ router.get('/overview', authenticate, async (req, res) => {
 });
 
 export default router;
-
-// ============================================
-// DON'T FORGET TO ADD TO YOUR MAIN APP FILE
-// ============================================
-// In your server.js or app.js:
-// import dashboardRoutes from './routes/dashboard.routes.js';
-// app.use('/api/dashboard', dashboardRoutes);
