@@ -1,5 +1,5 @@
-import { Link } from "react-router-dom";
-import { useState, useEffect } from "react";
+import { useState } from "react";
+import Navbar from "../components/Navbar";
 
 const faqs = [
   {
@@ -35,14 +35,7 @@ const faqs = [
 ];
 
 export default function FAQ() {
-  const [scrollY, setScrollY] = useState(0);
   const [activeIndex, setActiveIndex] = useState(null);
-
-  useEffect(() => {
-    const handleScroll = () => setScrollY(window.scrollY);
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
 
   const toggleFAQ = (index) => {
     setActiveIndex(activeIndex === index ? null : index);
@@ -50,28 +43,7 @@ export default function FAQ() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#0f0f1a] via-[#13132a] to-[#0f0f1a] text-white px-6 pb-12">
-      {/* Navbar */}
-      <nav
-        className={`fixed w-full z-50 transition-all duration-300 ${
-          scrollY > 50 ? "bg-slate-900/95 shadow-lg" : "bg-transparent"
-        }`}
-      >
-        <div className="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
-          <Link to="/" className="flex items-center gap-2">
-            <div className="w-10 h-10 bg-gradient-to-r from-purple-500 to-pink-500 rounded-lg flex items-center justify-center">
-              <span className="font-bold">AI</span>
-            </div>
-            <span className="text-xl font-bold">Intervyo</span>
-          </Link>
-
-          <Link
-            to="/"
-            className="px-4 py-2 bg-purple-600 rounded-lg hover:bg-purple-700 transition"
-          >
-            Home
-          </Link>
-        </div>
-      </nav>
+      <Navbar variant="simple" />
 
       {/* FAQ Section */}
       <div className="pt-24 max-w-4xl mx-auto">
