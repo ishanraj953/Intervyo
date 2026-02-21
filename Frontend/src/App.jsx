@@ -70,17 +70,19 @@ function App() {
     };
   }, []);
 
-  useEffect(() => {
+useEffect(() => {
   const hideNavbarRoutes = ["/dashboard", "/settings", "/pricing", "/career", "/terms", "/privacy", "/cookie-policy", "/interview-setup", "/auth/callback"];
   const hideNavbar =
     hideNavbarRoutes.includes(location.pathname) ||
     location.pathname.startsWith("/interview-room");
+  // You probably want to store this somewhere or use it in state — currently hideNavbar is unused here
+}, [location.pathname]); // Add dependencies if needed
 
-  useEffect(() => {
-    if ("serviceWorker" in navigator) {
-      navigator.serviceWorker.register("/sw.js");
-    }
-  }, []);
+useEffect(() => {
+  if ("serviceWorker" in navigator) {
+    navigator.serviceWorker.register("/sw.js");
+  }
+}, []);
 
   return (
     <>
