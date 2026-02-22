@@ -43,10 +43,28 @@ import Lenis from "@studio-freight/lenis";
 function App() {
   const location = useLocation();
 
+  /* ===== Footer Visibility ===== */
   const hideFooterRoutes = ["/login", "/register"];
   const hideFooter = hideFooterRoutes.includes(location.pathname);
 
-  // Initialize smooth scrolling with Lenis
+  /* ===== Navbar Visibility (FIXED) ===== */
+  const hideNavbarRoutes = [
+    "/dashboard",
+    "/settings",
+    "/pricing",
+    "/career",
+    "/terms",
+    "/privacy",
+    "/cookie-policy",
+    "/interview-setup",
+    "/auth/callback",
+  ];
+
+  const hideNavbar =
+    hideNavbarRoutes.includes(location.pathname) ||
+    location.pathname.startsWith("/interview-room");
+
+  /* ===== Lenis Smooth Scroll ===== */
   useEffect(() => {
     const lenis = new Lenis({
       duration: 1.2,
@@ -70,19 +88,12 @@ function App() {
     };
   }, []);
 
-useEffect(() => {
-  const hideNavbarRoutes = ["/dashboard", "/settings", "/pricing", "/career", "/terms", "/privacy", "/cookie-policy", "/interview-setup", "/auth/callback"];
-  const hideNavbar =
-    hideNavbarRoutes.includes(location.pathname) ||
-    location.pathname.startsWith("/interview-room");
-  // You probably want to store this somewhere or use it in state — currently hideNavbar is unused here
-}, [location.pathname]); // Add dependencies if needed
-
-useEffect(() => {
-  if ("serviceWorker" in navigator) {
-    navigator.serviceWorker.register("/sw.js");
-  }
-}, []);
+  /* ===== Service Worker ===== */
+  useEffect(() => {
+    if ("serviceWorker" in navigator) {
+      navigator.serviceWorker.register("/sw.js");
+    }
+  }, []);
 
   return (
     <>
@@ -93,7 +104,6 @@ useEffect(() => {
             scroll-behavior: smooth;
           }
 
-          /* ===== Modern Glass Scrollbar ===== */
           ::-webkit-scrollbar {
             width: 10px;
           }
@@ -113,7 +123,6 @@ useEffect(() => {
             background: rgba(255, 255, 255, 0.6);
           }
 
-          /* Firefox */
           * {
             scrollbar-width: thin;
             scrollbar-color: rgba(255,255,255,0.4) transparent;
@@ -123,6 +132,7 @@ useEffect(() => {
 
       <ScrollToTop />
       <ScrollToTopOnRouteChange />
+
       {!hideNavbar && <Navbar />}
 
       <Routes>
@@ -248,7 +258,6 @@ useEffect(() => {
         />
 
         <Route path="/quiz" element={<QuizPage />} />
-
         <Route path="*" element={<NotFound />} />
       </Routes>
 
