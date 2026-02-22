@@ -1,9 +1,10 @@
 import { useEffect, useRef, useState } from "react";
-import { Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
+import { useSelector } from "react-redux";
 import { Mail, Phone, MapPin, Send } from "lucide-react";
 import { submitContactForm } from "../services/operations/contactAPI";
-import Navbar from "../components/Navbar";
 import Lenis from "@studio-freight/lenis";
+
 export default function ContactUs() {
   const [loading, setLoading] = useState(false);
   const lenisRef = useRef(null);
@@ -67,7 +68,6 @@ export default function ContactUs() {
 
   return (
     <div className="bg-skin-primary text-skin-primary min-h-screen flex flex-col transition-colors duration-300">
-      <Navbar tone="skin" showThemeToggle />
 
       {/* Hero Section */}
       <section className="pt-40 pb-20 px-6 relative overflow-hidden bg-skin-secondary text-skin-primary transition-colors duration-300">
