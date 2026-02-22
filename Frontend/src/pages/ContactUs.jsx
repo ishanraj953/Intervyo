@@ -1,9 +1,12 @@
 import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { Mail, Phone, MapPin, Send } from "lucide-react";
-import { submitContactForm } from "../services/operations/contactAPI";
 import Navbar from "../components/Navbar";
+import { useNavigate } from "react-router-dom";
+import { useSelector } from "react-redux";
+import { submitContactForm } from "../services/operations/contactAPI";
 import Lenis from "@studio-freight/lenis";
+
 export default function ContactUs() {
   const [loading, setLoading] = useState(false);
   const lenisRef = useRef(null);

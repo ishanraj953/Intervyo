@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useSelector } from "react-redux";
-import { Menu, X } from "lucide-react";
+import { Menu, X, Home } from "lucide-react";
 import ThemeToggle from "./ThemeToggle";
 
 const NAV_TONES = {
@@ -64,27 +64,33 @@ export default function Navbar({
 }) {
   const { token } = useSelector((state) => state.auth);
   const navigate = useNavigate();
+  const location = useLocation();
+
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [scrollY, setScrollY] = useState(0);
+
   const styles = NAV_TONES[tone] || NAV_TONES.light;
   const links = useMemo(() => buildLinks(isLanding), [isLanding]);
 
   useEffect(() => {
-    if (variant !== "simple") {
-      return undefined;
-    }
+    if (variant !== "simple") return;
     const handleScroll = () => setScrollY(window.scrollY);
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, [variant]);
 
-  const closeMobileMenu = () => {
-    setMobileMenuOpen(false);
-  };
+  const closeMobileMenu = () => setMobileMenuOpen(false);
 
   const handleSectionClick = (event, sectionId) => {
-    if (onSectionClick) {
-      onSectionClick(event, sectionId);
+    if (onSectionClick) onSectionClick(event, sectionId);
+    closeMobileMenu();
+  };
+
+  const handleHomeClick = () => {
+    if (location.pathname === "/") {
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    } else {
+      navigate("/");
     }
     closeMobileMenu();
   };
@@ -92,10 +98,11 @@ export default function Navbar({
   if (variant === "simple") {
     return (
       <nav
-        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${scrollY > 20
-          ? "bg-skin-primary/95 backdrop-blur-xl shadow-lg shadow-black/5"
-          : "bg-transparent"
-          }`}
+        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
+          scrollY > 20
+            ? "bg-skin-primary/95 backdrop-blur-xl shadow-lg shadow-black/5"
+            : "bg-transparent"
+        }`}
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16 sm:h-20">
@@ -104,7 +111,6 @@ export default function Navbar({
                 <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-lg sm:rounded-xl flex items-center justify-center ">
                   <img src={logo} alt="logo" />
                 </div>
-
               </div>
               <div>
                 <span className="text-xl sm:text-2xl font-bold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
@@ -124,10 +130,19 @@ export default function Navbar({
   return (
     <nav className={styles.nav}>
       <div className="px-4 md:px-8 py-4 flex items-center justify-between">
-        <Link to="/" className="text-xl md:text-2xl font-bold">
-          <span className={styles.logoPrimary}>Interv</span>
-          <span className={styles.logoSecondary}>yo</span>
-        </Link>
+
+        <div className="flex items-center gap-6">
+          <Link to="/" className="text-xl md:text-2xl font-bold">
+            <span className={styles.logoPrimary}>Interv</span>
+            <span className={styles.logoSecondary}>yo</span>
+          </Link>
+
+          <Home
+            size={20}
+            className="cursor-pointer"
+            onClick={handleHomeClick}
+          />
+        </div>
 
         <div className="hidden lg:flex items-center gap-8">
           {links.map((link) => {
@@ -175,16 +190,10 @@ export default function Navbar({
           ) : (
             showAuthButtons && (
               <>
-                <Link
-                  to="/login"
-                  className="px-4 py-2 bg-black text-white rounded-lg hover:bg-gray-800 font-semibold shadow-lg transition-all text-sm"
-                >
+                <Link to="/login" className="px-4 py-2 bg-black text-white rounded-lg">
                   Sign In
                 </Link>
-                <Link
-                  to="/register"
-                  className="px-4 py-2 bg-emerald-500 text-white rounded-lg hover:bg-emerald-600 font-semibold shadow-lg transition-all text-sm"
-                >
+                <Link to="/register" className="px-4 py-2 bg-emerald-500 text-white rounded-lg">
                   Get Started
                 </Link>
               </>
@@ -195,94 +204,29 @@ export default function Navbar({
         <button
           onClick={() => setMobileMenuOpen((open) => !open)}
           className={`lg:hidden p-2 rounded-lg transition-colors ${styles.menuButton}`}
-          aria-label="Toggle menu"
         >
           {mobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
         </button>
       </div>
 
       {mobileMenuOpen && (
-        <div
-          className={`lg:hidden absolute top-full left-0 right-0 mt-2 mx-2 overflow-hidden ${styles.mobileMenu}`}
-        >
+        <div className={`lg:hidden absolute top-full left-0 right-0 mt-2 mx-2 overflow-hidden ${styles.mobileMenu}`}>
           <div className="p-6 space-y-4">
-            {links.map((link) => {
-              const isActive = activeKey === link.key;
-              const className = `block font-medium py-3 px-4 rounded-lg hover:bg-gray-50 transition-colors ${
-                styles.mobileLink
-              }${isActive ? ` ${styles.activeMobile}` : ""}`;
-
-              if (link.isSection) {
-                return (
-                  <a
-                    key={link.key}
-                    href={link.href}
-                    onClick={
-                      onSectionClick
-                        ? (event) => handleSectionClick(event, link.href)
-                        : closeMobileMenu
-                    }
-                    className={className}
-                  >
-                    {link.label}
-                  </a>
-                );
-              }
-
-              return (
-                <Link
+            {links.map((link) =>
+              link.isSection ? (
+                <a
                   key={link.key}
-                  to={link.to}
+                  href={link.href}
                   onClick={closeMobileMenu}
-                  className={className}
+                  className="block"
                 >
                   {link.label}
+                </a>
+              ) : (
+                <Link key={link.key} to={link.to} onClick={closeMobileMenu} className="block">
+                  {link.label}
                 </Link>
-              );
-            })}
-
-            {showThemeToggle && (
-              <div className="flex items-center justify-between py-3 px-4 rounded-lg hover:bg-gray-50 transition-colors">
-                <span className="text-gray-600 font-medium">Theme</span>
-                <ThemeToggle />
-              </div>
-            )}
-
-            {(showDashboardButton || showAuthButtons) && (
-              <div className="pt-4 border-t border-gray-200 space-y-3">
-                {token ? (
-                  showDashboardButton && (
-                    <button
-                      onClick={() => {
-                        navigate("/dashboard");
-                        closeMobileMenu();
-                      }}
-                      className="w-full px-6 py-3 bg-black text-white rounded-lg hover:bg-gray-800 font-semibold shadow-lg transition-all"
-                    >
-                      Dashboard
-                    </button>
-                  )
-                ) : (
-                  showAuthButtons && (
-                    <>
-                      <Link
-                        to="/login"
-                        onClick={closeMobileMenu}
-                        className="block w-full px-6 py-3 bg-black text-white rounded-lg hover:bg-gray-800 font-semibold shadow-lg transition-all text-center"
-                      >
-                        Sign In
-                      </Link>
-                      <Link
-                        to="/register"
-                        onClick={closeMobileMenu}
-                        className="block w-full px-6 py-3 bg-emerald-500 text-white rounded-lg hover:bg-emerald-600 font-semibold shadow-lg transition-all text-center"
-                      >
-                        Get Started
-                      </Link>
-                    </>
-                  )
-                )}
-              </div>
+              )
             )}
           </div>
         </div>
