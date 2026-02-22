@@ -1335,166 +1335,165 @@ export default function LandingPage() {
 
       {/* FAQ Section */}
       <section
-        id="faq"
-        className="py-24 px-6 bg-gradient-to-br from-emerald-600 to-emerald-500"
-      >
-        <div className="max-w-4xl mx-auto">
-          <h2 className="text-4xl md:text-5xl font-bold text-white text-center mb-16">
-            I've got questions.
-          </h2>
+    id="faq"
+    className="py-24 px-6 bg-gradient-to-br from-emerald-600 to-emerald-500"
+  >
+  <div className="max-w-4xl mx-auto">
+    <h2 className="text-4xl md:text-5xl font-bold text-white text-center mb-16">
+      I've got questions.
+    </h2>
 
-          <div className="space-y-4">
-            {/* FAQ 1 */}
-            <div className="border-b-4 border-white pb-6">
-              <button
-                onClick={() => toggleFaq(0)}
-                className="w-full flex items-center justify-between text-left group"
-              >
-                <h3 className="text-2xl md:text-3xl font-bold text-white pr-8">
-                  How does AI feedback work?
-                </h3>
-                <ChevronDown
-                  className={`w-12 h-12 text-white flex-shrink-0 transition-transform duration-300 ${openFaq === 0 ? "rotate-180" : ""}`}
-                  strokeWidth={3}
-                />
-              </button>
-              {openFaq === 0 && (
-                <p className="mt-6 text-xl text-white/90 leading-relaxed">
-                  Our AI analyzes your responses in real-time, evaluating
-                  clarity, technical accuracy, structure, and completeness.
-                  You'll receive instant, actionable feedback on how to improve
-                  your answers, just like a real interviewer would provide.
-                </p>
-              )}
-            </div>
+    <div className="space-y-4">
+      {/* FAQ 1 */}
+      <div className="border-b-4 border-white pb-6 rounded-2xl transition-all duration-300 hover:bg-white/10 hover:backdrop-blur-md hover:border-white/70 hover:shadow-[0_8px_32px_rgba(255,255,255,0.15)] px-4">
+        <button
+          onClick={() => toggleFaq(0)}
+          className="w-full flex items-center justify-between text-left group"
+        >
+          <h3 className="text-2xl md:text-3xl font-bold text-white pr-8">
+            How does AI feedback work?
+          </h3>
+          <ChevronDown
+            className={`w-12 h-12 text-white flex-shrink-0 transition-transform duration-300 ${
+              openFaq === 0 ? "rotate-180" : ""
+            }`}
+            strokeWidth={3}
+          />
+        </button>
+        {openFaq === 0 && (
+          <p className="mt-6 text-xl text-white/90 leading-relaxed">
+            Our AI analyzes your responses in real-time, evaluating clarity,
+            technical accuracy, structure, and completeness. You'll receive
+            instant, actionable feedback on how to improve your answers, just
+            like a real interviewer would provide.
+          </p>
+        )}
+      </div>
 
-            {/* FAQ 2 */}
-            <div className="border-b-4 border-white pb-6">
-              <button
-                onClick={() => toggleFaq(1)}
-                className="w-full flex items-center justify-between text-left group"
-              >
-                <h3 className="text-2xl md:text-3xl font-bold text-white pr-8">
-                  Can I practice for specific tech roles?
-                </h3>
-                <ChevronDown
-                  className={`w-12 h-12 text-white flex-shrink-0 transition-transform duration-300 ${openFaq === 1 ? "rotate-180" : ""}`}
-                  strokeWidth={3}
-                />
-              </button>
-              {openFaq === 1 && (
-                <p className="mt-6 text-xl text-white/90 leading-relaxed">
-                  Yes! We have role-specific question banks for 50+ tech
-                  positions including Frontend, Backend, Full Stack, DevOps,
-                  Data Science, ML Engineer, Product Manager, and more. Each
-                  role has curated questions that match real interview
-                  scenarios.
-                </p>
-              )}
-            </div>
+      {/* FAQ 2 */}
+      <div className="border-b-4 border-white pb-6 rounded-2xl transition-all duration-300 hover:bg-white/10 hover:backdrop-blur-md hover:border-white/70 hover:shadow-[0_8px_32px_rgba(255,255,255,0.15)] px-4">
+        <button
+          onClick={() => toggleFaq(1)}
+          className="w-full flex items-center justify-between text-left group"
+        >
+          <h3 className="text-2xl md:text-3xl font-bold text-white pr-8">
+            Can I practice for specific tech roles?
+          </h3>
+          <ChevronDown
+            className={`w-12 h-12 text-white flex-shrink-0 transition-transform duration-300 ${
+              openFaq === 1 ? "rotate-180" : ""
+            }`}
+            strokeWidth={3}
+          />
+        </button>
+        {openFaq === 1 && (
+          <p className="mt-6 text-xl text-white/90 leading-relaxed">
+            Yes! We have role-specific question banks for 50+ tech positions
+            including Frontend, Backend, Full Stack, DevOps, Data Science, ML
+            Engineer, Product Manager, and more.
+          </p>
+        )}
+      </div>
 
-            {/* FAQ 3 */}
-            <div className="border-b-4 border-white pb-6">
-              <button
-                onClick={() => toggleFaq(2)}
-                className="w-full flex items-center justify-between text-left group"
-              >
-                <h3 className="text-2xl md:text-3xl font-bold text-white pr-8">
-                  How fast will I see improvement?
-                </h3>
-                <ChevronDown
-                  className={`w-12 h-12 text-white flex-shrink-0 transition-transform duration-300 ${openFaq === 2 ? "rotate-180" : ""}`}
-                  strokeWidth={3}
-                />
-              </button>
-              {openFaq === 2 && (
-                <p className="mt-6 text-xl text-white/90 leading-relaxed">
-                  Most users see significant improvement within 1-2 weeks of
-                  consistent practice. Our analytics dashboard tracks your
-                  progress over time, showing improvements in clarity, technical
-                  depth, and structure scores. Practice 3-5 interviews per week
-                  for best results.
-                </p>
-              )}
-            </div>
+      {/* FAQ 3 */}
+      <div className="border-b-4 border-white pb-6 rounded-2xl transition-all duration-300 hover:bg-white/10 hover:backdrop-blur-md hover:border-white/70 hover:shadow-[0_8px_32px_rgba(255,255,255,0.15)] px-4">
+        <button
+          onClick={() => toggleFaq(2)}
+          className="w-full flex items-center justify-between text-left group"
+        >
+          <h3 className="text-2xl md:text-3xl font-bold text-white pr-8">
+            How fast will I see improvement?
+          </h3>
+          <ChevronDown
+            className={`w-12 h-12 text-white flex-shrink-0 transition-transform duration-300 ${
+              openFaq === 2 ? "rotate-180" : ""
+            }`}
+            strokeWidth={3}
+          />
+        </button>
+        {openFaq === 2 && (
+          <p className="mt-6 text-xl text-white/90 leading-relaxed">
+            Most users see significant improvement within 1-2 weeks of
+            consistent practice. Practice 3-5 interviews per week for best
+            results.
+          </p>
+        )}
+      </div>
 
-            {/* FAQ 4 */}
-            <div className="border-b-4 border-white pb-6">
-              <button
-                onClick={() => toggleFaq(3)}
-                className="w-full flex items-center justify-between text-left group"
-              >
-                <h3 className="text-2xl md:text-3xl font-bold text-white pr-8">
-                  Is voice practice really necessary?
-                </h3>
-                <ChevronDown
-                  className={`w-12 h-12 text-white flex-shrink-0 transition-transform duration-300 ${openFaq === 3 ? "rotate-180" : ""}`}
-                  strokeWidth={3}
-                />
-              </button>
-              {openFaq === 3 && (
-                <p className="mt-6 text-xl text-white/90 leading-relaxed">
-                  Absolutely! Speaking your answers out loud helps you practice
-                  articulation, pacing, and confidence. Many candidates freeze
-                  during verbal interviews even when they know the answer. Our
-                  voice practice feature simulates real interview conditions so
-                  you're prepared.
-                </p>
-              )}
-            </div>
+      {/* FAQ 4 */}
+      <div className="border-b-4 border-white pb-6 rounded-2xl transition-all duration-300 hover:bg-white/10 hover:backdrop-blur-md hover:border-white/70 hover:shadow-[0_8px_32px_rgba(255,255,255,0.15)] px-4">
+        <button
+          onClick={() => toggleFaq(3)}
+          className="w-full flex items-center justify-between text-left group"
+        >
+          <h3 className="text-2xl md:text-3xl font-bold text-white pr-8">
+            Is voice practice really necessary?
+          </h3>
+          <ChevronDown
+            className={`w-12 h-12 text-white flex-shrink-0 transition-transform duration-300 ${
+              openFaq === 3 ? "rotate-180" : ""
+            }`}
+            strokeWidth={3}
+          />
+        </button>
+        {openFaq === 3 && (
+          <p className="mt-6 text-xl text-white/90 leading-relaxed">
+            Absolutely! Speaking your answers out loud helps you practice
+            articulation, pacing, and confidence.
+          </p>
+        )}
+      </div>
 
-            {/* FAQ 5 */}
-            <div className="border-b-4 border-white pb-6">
-              <button
-                onClick={() => toggleFaq(4)}
-                className="w-full flex items-center justify-between text-left group"
-              >
-                <h3 className="text-2xl md:text-3xl font-bold text-white pr-8">
-                  Can I use this to prepare my team for interviews?
-                </h3>
-                <ChevronDown
-                  className={`w-12 h-12 text-white flex-shrink-0 transition-transform duration-300 ${openFaq === 4 ? "rotate-180" : ""}`}
-                  strokeWidth={3}
-                />
-              </button>
-              {openFaq === 4 && (
-                <p className="mt-6 text-xl text-white/90 leading-relaxed">
-                  Yes! Our Enterprise plan includes team management features,
-                  custom branding, and dedicated support. Perfect for bootcamps,
-                  training programs, and companies preparing candidates for
-                  technical interviews. Contact our sales team for custom
-                  solutions.
-                </p>
-              )}
-            </div>
+      {/* FAQ 5 */}
+      <div className="border-b-4 border-white pb-6 rounded-2xl transition-all duration-300 hover:bg-white/10 hover:backdrop-blur-md hover:border-white/70 hover:shadow-[0_8px_32px_rgba(255,255,255,0.15)] px-4">
+        <button
+          onClick={() => toggleFaq(4)}
+          className="w-full flex items-center justify-between text-left group"
+        >
+          <h3 className="text-2xl md:text-3xl font-bold text-white pr-8">
+            Can I use this to prepare my team for interviews?
+          </h3>
+          <ChevronDown
+            className={`w-12 h-12 text-white flex-shrink-0 transition-transform duration-300 ${
+              openFaq === 4 ? "rotate-180" : ""
+            }`}
+            strokeWidth={3}
+          />
+        </button>
+        {openFaq === 4 && (
+          <p className="mt-6 text-xl text-white/90 leading-relaxed">
+            Yes! Our Enterprise plan includes team management features and
+            custom branding.
+          </p>
+        )}
+      </div>
 
-            {/* FAQ 6 */}
-            <div className="border-b-4 border-white pb-6">
-              <button
-                onClick={() => toggleFaq(5)}
-                className="w-full flex items-center justify-between text-left group"
-              >
-                <h3 className="text-2xl md:text-3xl font-bold text-white pr-8">
-                  What companies do your questions prepare me for?
-                </h3>
-                <ChevronDown
-                  className={`w-12 h-12 text-white flex-shrink-0 transition-transform duration-300 ${openFaq === 5 ? "rotate-180" : ""}`}
-                  strokeWidth={3}
-                />
-              </button>
-              {openFaq === 5 && (
-                <p className="mt-6 text-xl text-white/90 leading-relaxed">
-                  Our question banks are designed to prepare you for interviews
-                  at top tech companies including FAANG (Facebook/Meta, Amazon,
-                  Apple, Netflix, Google), Microsoft, startups, and mid-size
-                  tech companies. The questions cover common patterns and topics
-                  asked across the industry.
-                </p>
-              )}
-            </div>
-          </div>
-        </div>
-      </section>
+      {/* FAQ 6 */}
+      <div className="border-b-4 border-white pb-6 rounded-2xl transition-all duration-300 hover:bg-white/10 hover:backdrop-blur-md hover:border-white/70 hover:shadow-[0_8px_32px_rgba(255,255,255,0.15)] px-4">
+        <button
+          onClick={() => toggleFaq(5)}
+          className="w-full flex items-center justify-between text-left group"
+        >
+          <h3 className="text-2xl md:text-3xl font-bold text-white pr-8">
+            What companies do your questions prepare me for?
+          </h3>
+          <ChevronDown
+            className={`w-12 h-12 text-white flex-shrink-0 transition-transform duration-300 ${
+              openFaq === 5 ? "rotate-180" : ""
+            }`}
+            strokeWidth={3}
+          />
+        </button>
+        {openFaq === 5 && (
+          <p className="mt-6 text-xl text-white/90 leading-relaxed">
+            Our question banks prepare you for FAANG, Microsoft, startups, and
+            mid-size tech companies.
+          </p>
+        )}
+      </div>
+    </div>
+  </div>
+</section>
 
       {/* CTA Section */}
       <section className="py-20 px-6 bg-gray-900 text-white">
