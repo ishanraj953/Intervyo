@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useSelector } from "react-redux";
-import { Menu, X, Home } from "lucide-react";
+import { Menu, X } from "lucide-react";
 import ThemeToggle from "./ThemeToggle";
 
 const NAV_TONES = {
@@ -143,6 +143,9 @@ export default function Navbar({
             onClick={handleHomeClick}
           />
         </div>
+      </nav>
+    );
+  }
 
         <div className="hidden lg:flex items-center gap-8">
           {links.map((link) => {
